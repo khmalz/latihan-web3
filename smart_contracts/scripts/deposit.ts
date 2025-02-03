@@ -34,19 +34,39 @@ async function withdraw(savings: Savings, amount: string) {
    }
 }
 
+async function getDonations(savings: Savings) {
+   const donations = await savings.getDeposits(); // Misalnya, ini mengembalikan array dari DepositInfoStructOutput
+
+   // Memformat data donasi
+   const formattedDonations = donations.map(donation => {
+      return {
+         donor: donation[0],
+         amount: ethers.formatEther(donation[1]),
+         timestamp: new Date(Number(donation[2].toString()) * 1000).toLocaleString(),
+      };
+   });
+
+   console.log("Donations:");
+   formattedDonations.forEach(donation => {
+      console.log(`Donor: ${donation.donor}, Amount: ${donation.amount} ETH, Timestamp: ${donation.timestamp}`);
+   });
+}
+
 async function main() {
    const [deployer, acc1] = await ethers.getSigners();
-   const savings: Savings = await ethers.getContractAt("Savings", contractAddress, deployer);
+   const savings: Savings = await ethers.getContractAt("Savings", contractAddress, acc1);
 
    await getOwner(savings);
 
-   await donate(savings, "0.005");
+   // await donate(savings, "1");
 
    const totalDeposited = await getTotalDeposited(savings);
 
-   await withdraw(savings, ethers.formatEther(totalDeposited));
+   // await withdraw(savings, ethers.formatEther(totalDeposited));
 
    const totalDepositedAfter = await getTotalDeposited(savings);
+
+   await getDonations(savings);
 }
 
 // Menjalankan fungsi main dan menangani error
